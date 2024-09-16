@@ -1,0 +1,24 @@
+{
+    "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentParameters.json#",
+    "contentVersion": "1.0.0.0",
+    "parameters": {
+        "serverfarms_UKSouthPlan_name": {
+            "value": null
+        },
+        "components_Chapter2DocumentClassifier_name": {
+            "value": null
+        },
+        "storageAccounts_tutch2docsclassifierst_name": {
+            "value": null
+        },
+        "sites_Chapter2DocumentClassifier20240912215556_name": {
+            "value": null
+        },
+        "accounts_tut_ch2_docs_classifier_lang_name": {
+            "value": null
+        },
+        "workspaces_DefaultWorkspace_2eb5b1d0_d315_4b57_815c_3df15002ac69_SUK_externalid": {
+            "value": null
+        }
+    }
+}

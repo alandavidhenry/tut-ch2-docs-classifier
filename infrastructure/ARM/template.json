@@ -1,0 +1,935 @@
+{
+    "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+    "contentVersion": "1.0.0.0",
+    "parameters": {
+        "serverfarms_UKSouthPlan_name": {
+            "defaultValue": "UKSouthPlan",
+            "type": "String"
+        },
+        "components_Chapter2DocumentClassifier_name": {
+            "defaultValue": "Chapter2DocumentClassifier",
+            "type": "String"
+        },
+        "storageAccounts_tutch2docsclassifierst_name": {
+            "defaultValue": "tutch2docsclassifierst",
+            "type": "String"
+        },
+        "sites_Chapter2DocumentClassifier20240912215556_name": {
+            "defaultValue": "Chapter2DocumentClassifier20240912215556",
+            "type": "String"
+        },
+        "accounts_tut_ch2_docs_classifier_lang_name": {
+            "defaultValue": "tut-ch2-docs-classifier-lang",
+            "type": "String"
+        },
+        "workspaces_DefaultWorkspace_2eb5b1d0_d315_4b57_815c_3df15002ac69_SUK_externalid": {
+            "defaultValue": "/subscriptions/2eb5b1d0-d315-4b57-815c-3df15002ac69/resourceGroups/DefaultResourceGroup-SUK/providers/Microsoft.OperationalInsights/workspaces/DefaultWorkspace-2eb5b1d0-d315-4b57-815c-3df15002ac69-SUK",
+            "type": "String"
+        }
+    },
+    "variables": {},
+    "resources": [
+        {
+            "type": "Microsoft.CognitiveServices/accounts",
+            "apiVersion": "2024-04-01-preview",
+            "name": "[parameters('accounts_tut_ch2_docs_classifier_lang_name')]",
+            "location": "uksouth",
+            "tags": {
+                "tutorial": "chapter2"
+            },
+            "sku": {
+                "name": "F0"
+            },
+            "kind": "TextAnalytics",
+            "identity": {
+                "type": "SystemAssigned"
+            },
+            "properties": {
+                "apiProperties": {},
+                "customSubDomainName": "[parameters('accounts_tut_ch2_docs_classifier_lang_name')]",
+                "networkAcls": {
+                    "defaultAction": "Allow",
+                    "virtualNetworkRules": [],
+                    "ipRules": []
+                },
+                "publicNetworkAccess": "Enabled"
+            }
+        },
+        {
+            "type": "microsoft.insights/components",
+            "apiVersion": "2020-02-02",
+            "name": "[parameters('components_Chapter2DocumentClassifier_name')]",
+            "location": "uksouth",
+            "kind": "web",
+            "properties": {
+                "Application_Type": "web",
+                "Flow_Type": "Redfield",
+                "Request_Source": "WebTools16.0",
+                "RetentionInDays": 90,
+                "WorkspaceResourceId": "[parameters('workspaces_DefaultWorkspace_2eb5b1d0_d315_4b57_815c_3df15002ac69_SUK_externalid')]",
+                "IngestionMode": "LogAnalytics",
+                "publicNetworkAccessForIngestion": "Enabled",
+                "publicNetworkAccessForQuery": "Enabled"
+            }
+        },
+        {
+            "type": "Microsoft.Storage/storageAccounts",
+            "apiVersion": "2023-05-01",
+            "name": "[parameters('storageAccounts_tutch2docsclassifierst_name')]",
+            "location": "uksouth",
+            "tags": {
+                "tutorial": "chapter2"
+            },
+            "sku": {
+                "name": "Standard_RAGRS",
+                "tier": "Standard"
+            },
+            "kind": "StorageV2",
+            "properties": {
+                "dnsEndpointType": "Standard",
+                "defaultToOAuthAuthentication": false,
+                "publicNetworkAccess": "Enabled",
+                "allowCrossTenantReplication": false,
+                "minimumTlsVersion": "TLS1_2",
+                "allowBlobPublicAccess": false,
+                "allowSharedKeyAccess": true,
+                "largeFileSharesState": "Enabled",
+                "networkAcls": {
+                    "bypass": "AzureServices",
+                    "virtualNetworkRules": [],
+                    "ipRules": [],
+                    "defaultAction": "Allow"
+                },
+                "supportsHttpsTrafficOnly": true,
+                "encryption": {
+                    "requireInfrastructureEncryption": false,
+                    "services": {
+                        "file": {
+                            "keyType": "Account",
+                            "enabled": true
+                        },
+                        "blob": {
+                            "keyType": "Account",
+                            "enabled": true
+                        }
+                    },
+                    "keySource": "Microsoft.Storage"
+                },
+                "accessTier": "Hot"
+            }
+        },
+        {
+            "type": "Microsoft.Web/serverfarms",
+            "apiVersion": "2023-12-01",
+            "name": "[parameters('serverfarms_UKSouthPlan_name')]",
+            "location": "UK South",
+            "sku": {
+                "name": "Y1",
+                "tier": "Dynamic",
+                "size": "Y1",
+                "family": "Y",
+                "capacity": 0
+            },
+            "kind": "functionapp",
+            "properties": {
+                "perSiteScaling": false,
+                "elasticScaleEnabled": false,
+                "maximumElasticWorkerCount": 1,
+                "isSpot": false,
+                "reserved": false,
+                "isXenon": false,
+                "hyperV": false,
+                "targetWorkerCount": 0,
+                "targetWorkerSizeId": 0,
+                "zoneRedundant": false
+            }
+        },
+        {
+            "type": "microsoft.insights/components/ProactiveDetectionConfigs",
+            "apiVersion": "2018-05-01-preview",
+            "name": "[concat(parameters('components_Chapter2DocumentClassifier_name'), '/degradationindependencyduration')]",
+            "location": "uksouth",
+            "dependsOn": [
+                "[resourceId('microsoft.insights/components', parameters('components_Chapter2DocumentClassifier_name'))]"
+            ],
+            "properties": {
+                "ruleDefinitions": {
+                    "Name": "degradationindependencyduration",
+                    "DisplayName": "Degradation in dependency duration",
+                    "Description": "Smart Detection rules notify you of performance anomaly issues.",
+                    "HelpUrl": "https://docs.microsoft.com/en-us/azure/application-insights/app-insights-proactive-performance-diagnostics",
+                    "IsHidden": false,
+                    "IsEnabledByDefault": true,
+                    "IsInPreview": false,
+                    "SupportsEmailNotifications": true
+                },
+                "enabled": true,
+                "sendEmailsToSubscriptionOwners": true,
+                "customEmails": []
+            }
+        },
+        {
+            "type": "microsoft.insights/components/ProactiveDetectionConfigs",
+            "apiVersion": "2018-05-01-preview",
+            "name": "[concat(parameters('components_Chapter2DocumentClassifier_name'), '/degradationinserverresponsetime')]",
+            "location": "uksouth",
+            "dependsOn": [
+                "[resourceId('microsoft.insights/components', parameters('components_Chapter2DocumentClassifier_name'))]"
+            ],
+            "properties": {
+                "ruleDefinitions": {
+                    "Name": "degradationinserverresponsetime",
+                    "DisplayName": "Degradation in server response time",
+                    "Description": "Smart Detection rules notify you of performance anomaly issues.",
+                    "HelpUrl": "https://docs.microsoft.com/en-us/azure/application-insights/app-insights-proactive-performance-diagnostics",
+                    "IsHidden": false,
+                    "IsEnabledByDefault": true,
+                    "IsInPreview": false,
+                    "SupportsEmailNotifications": true
+                },
+                "enabled": true,
+                "sendEmailsToSubscriptionOwners": true,
+                "customEmails": []
+            }
+        },
+        {
+            "type": "microsoft.insights/components/ProactiveDetectionConfigs",
+            "apiVersion": "2018-05-01-preview",
+            "name": "[concat(parameters('components_Chapter2DocumentClassifier_name'), '/digestMailConfiguration')]",
+            "location": "uksouth",
+            "dependsOn": [
+                "[resourceId('microsoft.insights/components', parameters('components_Chapter2DocumentClassifier_name'))]"
+            ],
+            "properties": {
+                "ruleDefinitions": {
+                    "Name": "digestMailConfiguration",
+                    "DisplayName": "Digest Mail Configuration",
+                    "Description": "This rule describes the digest mail preferences",
+                    "HelpUrl": "www.homail.com",
+                    "IsHidden": true,
+                    "IsEnabledByDefault": true,
+                    "IsInPreview": false,
+                    "SupportsEmailNotifications": true
+                },
+                "enabled": true,
+                "sendEmailsToSubscriptionOwners": true,
+                "customEmails": []
+            }
+        },
+        {
+            "type": "microsoft.insights/components/ProactiveDetectionConfigs",
+            "apiVersion": "2018-05-01-preview",
+            "name": "[concat(parameters('components_Chapter2DocumentClassifier_name'), '/extension_billingdatavolumedailyspikeextension')]",
+            "location": "uksouth",
+            "dependsOn": [
+                "[resourceId('microsoft.insights/components', parameters('components_Chapter2DocumentClassifier_name'))]"
+            ],
+            "properties": {
+                "ruleDefinitions": {
+                    "Name": "extension_billingdatavolumedailyspikeextension",
+                    "DisplayName": "Abnormal rise in daily data volume (preview)",
+                    "Description": "This detection rule automatically analyzes the billing data generated by your application, and can warn you about an unusual increase in your application's billing costs",
+                    "HelpUrl": "https://github.com/Microsoft/ApplicationInsights-Home/tree/master/SmartDetection/billing-data-volume-daily-spike.md",
+                    "IsHidden": false,
+                    "IsEnabledByDefault": true,
+                    "IsInPreview": true,
+                    "SupportsEmailNotifications": false
+                },
+                "enabled": true,
+                "sendEmailsToSubscriptionOwners": true,
+                "customEmails": []
+            }
+        },
+        {
+            "type": "microsoft.insights/components/ProactiveDetectionConfigs",
+            "apiVersion": "2018-05-01-preview",
+            "name": "[concat(parameters('components_Chapter2DocumentClassifier_name'), '/extension_canaryextension')]",
+            "location": "uksouth",
+            "dependsOn": [
+                "[resourceId('microsoft.insights/components', parameters('components_Chapter2DocumentClassifier_name'))]"
+            ],
+            "properties": {
+                "ruleDefinitions": {
+                    "Name": "extension_canaryextension",
+                    "DisplayName": "Canary extension",
+                    "Description": "Canary extension",
+                    "HelpUrl": "https://github.com/Microsoft/ApplicationInsights-Home/blob/master/SmartDetection/",
+                    "IsHidden": true,
+                    "IsEnabledByDefault": true,
+                    "IsInPreview": true,
+                    "SupportsEmailNotifications": false
+                },
+                "enabled": true,
+                "sendEmailsToSubscriptionOwners": true,
+                "customEmails": []
+            }
+        },
+        {
+            "type": "microsoft.insights/components/ProactiveDetectionConfigs",
+            "apiVersion": "2018-05-01-preview",
+            "name": "[concat(parameters('components_Chapter2DocumentClassifier_name'), '/extension_exceptionchangeextension')]",
+            "location": "uksouth",
+            "dependsOn": [
+                "[resourceId('microsoft.insights/components', parameters('components_Chapter2DocumentClassifier_name'))]"
+            ],
+            "properties": {
+                "ruleDefinitions": {
+                    "Name": "extension_exceptionchangeextension",
+                    "DisplayName": "Abnormal rise in exception volume (preview)",
+                    "Description": "This detection rule automatically analyzes the exceptions thrown in your application, and can warn you about unusual patterns in your exception telemetry.",
+                    "HelpUrl": "https://github.com/Microsoft/ApplicationInsights-Home/blob/master/SmartDetection/abnormal-rise-in-exception-volume.md",
+                    "IsHidden": false,
+                    "IsEnabledByDefault": true,
+                    "IsInPreview": true,
+                    "SupportsEmailNotifications": false
+                },
+                "enabled": true,
+                "sendEmailsToSubscriptionOwners": true,
+                "customEmails": []
+            }
+        },
+        {
+            "type": "microsoft.insights/components/ProactiveDetectionConfigs",
+            "apiVersion": "2018-05-01-preview",
+            "name": "[concat(parameters('components_Chapter2DocumentClassifier_name'), '/extension_memoryleakextension')]",
+            "location": "uksouth",
+            "dependsOn": [
+                "[resourceId('microsoft.insights/components', parameters('components_Chapter2DocumentClassifier_name'))]"
+            ],
+            "properties": {
+                "ruleDefinitions": {
+                    "Name": "extension_memoryleakextension",
+                    "DisplayName": "Potential memory leak detected (preview)",
+                    "Description": "This detection rule automatically analyzes the memory consumption of each process in your application, and can warn you about potential memory leaks or increased memory consumption.",
+                    "HelpUrl": "https://github.com/Microsoft/ApplicationInsights-Home/tree/master/SmartDetection/memory-leak.md",
+                    "IsHidden": false,
+                    "IsEnabledByDefault": true,
+                    "IsInPreview": true,
+                    "SupportsEmailNotifications": false
+                },
+                "enabled": true,
+                "sendEmailsToSubscriptionOwners": true,
+                "customEmails": []
+            }
+        },
+        {
+            "type": "microsoft.insights/components/ProactiveDetectionConfigs",
+            "apiVersion": "2018-05-01-preview",
+            "name": "[concat(parameters('components_Chapter2DocumentClassifier_name'), '/extension_securityextensionspackage')]",
+            "location": "uksouth",
+            "dependsOn": [
+                "[resourceId('microsoft.insights/components', parameters('components_Chapter2DocumentClassifier_name'))]"
+            ],
+            "properties": {
+                "ruleDefinitions": {
+                    "Name": "extension_securityextensionspackage",
+                    "DisplayName": "Potential security issue detected (preview)",
+                    "Description": "This detection rule automatically analyzes the telemetry generated by your application and detects potential security issues.",
+                    "HelpUrl": "https://github.com/Microsoft/ApplicationInsights-Home/blob/master/SmartDetection/application-security-detection-pack.md",
+                    "IsHidden": false,
+                    "IsEnabledByDefault": true,
+                    "IsInPreview": true,
+                    "SupportsEmailNotifications": false
+                },
+                "enabled": true,
+                "sendEmailsToSubscriptionOwners": true,
+                "customEmails": []
+            }
+        },
+        {
+            "type": "microsoft.insights/components/ProactiveDetectionConfigs",
+            "apiVersion": "2018-05-01-preview",
+            "name": "[concat(parameters('components_Chapter2DocumentClassifier_name'), '/extension_traceseveritydetector')]",
+            "location": "uksouth",
+            "dependsOn": [
+                "[resourceId('microsoft.insights/components', parameters('components_Chapter2DocumentClassifier_name'))]"
+            ],
+            "properties": {
+                "ruleDefinitions": {
+                    "Name": "extension_traceseveritydetector",
+                    "DisplayName": "Degradation in trace severity ratio (preview)",
+                    "Description": "This detection rule automatically analyzes the trace logs emitted from your application, and can warn you about unusual patterns in the severity of your trace telemetry.",
+                    "HelpUrl": "https://github.com/Microsoft/ApplicationInsights-Home/blob/master/SmartDetection/degradation-in-trace-severity-ratio.md",
+                    "IsHidden": false,
+                    "IsEnabledByDefault": true,
+                    "IsInPreview": true,
+                    "SupportsEmailNotifications": false
+                },
+                "enabled": true,
+                "sendEmailsToSubscriptionOwners": true,
+                "customEmails": []
+            }
+        },
+        {
+            "type": "microsoft.insights/components/ProactiveDetectionConfigs",
+            "apiVersion": "2018-05-01-preview",
+            "name": "[concat(parameters('components_Chapter2DocumentClassifier_name'), '/longdependencyduration')]",
+            "location": "uksouth",
+            "dependsOn": [
+                "[resourceId('microsoft.insights/components', parameters('components_Chapter2DocumentClassifier_name'))]"
+            ],
+            "properties": {
+                "ruleDefinitions": {
+                    "Name": "longdependencyduration",
+                    "DisplayName": "Long dependency duration",
+                    "Description": "Smart Detection rules notify you of performance anomaly issues.",
+                    "HelpUrl": "https://docs.microsoft.com/en-us/azure/application-insights/app-insights-proactive-performance-diagnostics",
+                    "IsHidden": false,
+                    "IsEnabledByDefault": true,
+                    "IsInPreview": false,
+                    "SupportsEmailNotifications": true
+                },
+                "enabled": true,
+                "sendEmailsToSubscriptionOwners": true,
+                "customEmails": []
+            }
+        },
+        {
+            "type": "microsoft.insights/components/ProactiveDetectionConfigs",
+            "apiVersion": "2018-05-01-preview",
+            "name": "[concat(parameters('components_Chapter2DocumentClassifier_name'), '/migrationToAlertRulesCompleted')]",
+            "location": "uksouth",
+            "dependsOn": [
+                "[resourceId('microsoft.insights/components', parameters('components_Chapter2DocumentClassifier_name'))]"
+            ],
+            "properties": {
+                "ruleDefinitions": {
+                    "Name": "migrationToAlertRulesCompleted",
+                    "DisplayName": "Migration To Alert Rules Completed",
+                    "Description": "A configuration that controls the migration state of Smart Detection to Smart Alerts",
+                    "HelpUrl": "https://docs.microsoft.com/en-us/azure/application-insights/app-insights-proactive-performance-diagnostics",
+                    "IsHidden": true,
+                    "IsEnabledByDefault": false,
+                    "IsInPreview": true,
+                    "SupportsEmailNotifications": false
+                },
+                "enabled": false,
+                "sendEmailsToSubscriptionOwners": true,
+                "customEmails": []
+            }
+        },
+        {
+            "type": "microsoft.insights/components/ProactiveDetectionConfigs",
+            "apiVersion": "2018-05-01-preview",
+            "name": "[concat(parameters('components_Chapter2DocumentClassifier_name'), '/slowpageloadtime')]",
+            "location": "uksouth",
+            "dependsOn": [
+                "[resourceId('microsoft.insights/components', parameters('components_Chapter2DocumentClassifier_name'))]"
+            ],
+            "properties": {
+                "ruleDefinitions": {
+                    "Name": "slowpageloadtime",
+                    "DisplayName": "Slow page load time",
+                    "Description": "Smart Detection rules notify you of performance anomaly issues.",
+                    "HelpUrl": "https://docs.microsoft.com/en-us/azure/application-insights/app-insights-proactive-performance-diagnostics",
+                    "IsHidden": false,
+                    "IsEnabledByDefault": true,
+                    "IsInPreview": false,
+                    "SupportsEmailNotifications": true
+                },
+                "enabled": true,
+                "sendEmailsToSubscriptionOwners": true,
+                "customEmails": []
+            }
+        },
+        {
+            "type": "microsoft.insights/components/ProactiveDetectionConfigs",
+            "apiVersion": "2018-05-01-preview",
+            "name": "[concat(parameters('components_Chapter2DocumentClassifier_name'), '/slowserverresponsetime')]",
+            "location": "uksouth",
+            "dependsOn": [
+                "[resourceId('microsoft.insights/components', parameters('components_Chapter2DocumentClassifier_name'))]"
+            ],
+            "properties": {
+                "ruleDefinitions": {
+                    "Name": "slowserverresponsetime",
+                    "DisplayName": "Slow server response time",
+                    "Description": "Smart Detection rules notify you of performance anomaly issues.",
+                    "HelpUrl": "https://docs.microsoft.com/en-us/azure/application-insights/app-insights-proactive-performance-diagnostics",
+                    "IsHidden": false,
+                    "IsEnabledByDefault": true,
+                    "IsInPreview": false,
+                    "SupportsEmailNotifications": true
+                },
+                "enabled": true,
+                "sendEmailsToSubscriptionOwners": true,
+                "customEmails": []
+            }
+        },
+        {
+            "type": "Microsoft.Storage/storageAccounts/blobServices",
+            "apiVersion": "2023-05-01",
+            "name": "[concat(parameters('storageAccounts_tutch2docsclassifierst_name'), '/default')]",
+            "dependsOn": [
+                "[resourceId('Microsoft.Storage/storageAccounts', parameters('storageAccounts_tutch2docsclassifierst_name'))]"
+            ],
+            "sku": {
+                "name": "Standard_RAGRS",
+                "tier": "Standard"
+            },
+            "properties": {
+                "cors": {
+                    "corsRules": []
+                },
+                "deleteRetentionPolicy": {
+                    "allowPermanentDelete": false,
+                    "enabled": true,
+                    "days": 7
+                },
+                "containerDeleteRetentionPolicy": {
+                    "enabled": true,
+                    "days": 7
+                }
+            }
+        },
+        {
+            "type": "Microsoft.Storage/storageAccounts/fileServices",
+            "apiVersion": "2023-05-01",
+            "name": "[concat(parameters('storageAccounts_tutch2docsclassifierst_name'), '/default')]",
+            "dependsOn": [
+                "[resourceId('Microsoft.Storage/storageAccounts', parameters('storageAccounts_tutch2docsclassifierst_name'))]"
+            ],
+            "sku": {
+                "name": "Standard_RAGRS",
+                "tier": "Standard"
+            },
+            "properties": {
+                "protocolSettings": {
+                    "smb": {}
+                },
+                "cors": {
+                    "corsRules": []
+                },
+                "shareDeleteRetentionPolicy": {
+                    "enabled": true,
+                    "days": 7
+                }
+            }
+        },
+        {
+            "type": "Microsoft.Storage/storageAccounts/queueServices",
+            "apiVersion": "2023-05-01",
+            "name": "[concat(parameters('storageAccounts_tutch2docsclassifierst_name'), '/default')]",
+            "dependsOn": [
+                "[resourceId('Microsoft.Storage/storageAccounts', parameters('storageAccounts_tutch2docsclassifierst_name'))]"
+            ],
+            "properties": {
+                "cors": {
+                    "corsRules": []
+                }
+            }
+        },
+        {
+            "type": "Microsoft.Storage/storageAccounts/tableServices",
+            "apiVersion": "2023-05-01",
+            "name": "[concat(parameters('storageAccounts_tutch2docsclassifierst_name'), '/default')]",
+            "dependsOn": [
+                "[resourceId('Microsoft.Storage/storageAccounts', parameters('storageAccounts_tutch2docsclassifierst_name'))]"
+            ],
+            "properties": {
+                "cors": {
+                    "corsRules": []
+                }
+            }
+        },
+        {
+            "type": "Microsoft.Web/sites",
+            "apiVersion": "2023-12-01",
+            "name": "[parameters('sites_Chapter2DocumentClassifier20240912215556_name')]",
+            "location": "UK South",
+            "dependsOn": [
+                "[resourceId('Microsoft.Web/serverfarms', parameters('serverfarms_UKSouthPlan_name'))]"
+            ],
+            "tags": {
+                "hidden-link: /app-insights-resource-id": "/subscriptions/2eb5b1d0-d315-4b57-815c-3df15002ac69/resourceGroups/tut-ch2-docs-classifier-rg/providers/microsoft.insights/components/Chapter2DocumentClassifier",
+                "hidden-link: /app-insights-instrumentation-key": "e18b8120-7d34-4a42-9252-731089f2d6bc",
+                "hidden-link: /app-insights-conn-string": "InstrumentationKey=e18b8120-7d34-4a42-9252-731089f2d6bc;IngestionEndpoint=https://uksouth-1.in.applicationinsights.azure.com/;LiveEndpoint=https://uksouth.livediagnostics.monitor.azure.com/;ApplicationId=cfa9dd5d-d5ed-43cf-a91d-f7ddec98e084"
+            },
+            "kind": "functionapp",
+            "identity": {
+                "type": "SystemAssigned"
+            },
+            "properties": {
+                "enabled": true,
+                "hostNameSslStates": [
+                    {
+                        "name": "chapter2documentclassifier20240912215556.azurewebsites.net",
+                        "sslState": "Disabled",
+                        "hostType": "Standard"
+                    },
+                    {
+                        "name": "chapter2documentclassifier20240912215556.scm.azurewebsites.net",
+                        "sslState": "Disabled",
+                        "hostType": "Repository"
+                    }
+                ],
+                "serverFarmId": "[resourceId('Microsoft.Web/serverfarms', parameters('serverfarms_UKSouthPlan_name'))]",
+                "reserved": false,
+                "isXenon": false,
+                "hyperV": false,
+                "dnsConfiguration": {},
+                "vnetRouteAllEnabled": false,
+                "vnetImagePullEnabled": false,
+                "vnetContentShareEnabled": false,
+                "siteConfig": {
+                    "numberOfWorkers": 1,
+                    "acrUseManagedIdentityCreds": false,
+                    "alwaysOn": false,
+                    "http20Enabled": false,
+                    "functionAppScaleLimit": 200,
+                    "minimumElasticInstanceCount": 0
+                },
+                "scmSiteAlsoStopped": false,
+                "clientAffinityEnabled": false,
+                "clientCertEnabled": false,
+                "clientCertMode": "Required",
+                "hostNamesDisabled": false,
+                "vnetBackupRestoreEnabled": false,
+                "customDomainVerificationId": "482E121B69BFFE705F3EA93CD00DE46CC02BDB3B9E95D8EFCF0E682AF0BAEDB0",
+                "containerSize": 1536,
+                "dailyMemoryTimeQuota": 0,
+                "httpsOnly": true,
+                "redundancyMode": "None",
+                "storageAccountRequired": false,
+                "keyVaultReferenceIdentity": "SystemAssigned"
+            }
+        },
+        {
+            "type": "Microsoft.Web/sites/basicPublishingCredentialsPolicies",
+            "apiVersion": "2023-12-01",
+            "name": "[concat(parameters('sites_Chapter2DocumentClassifier20240912215556_name'), '/ftp')]",
+            "location": "UK South",
+            "dependsOn": [
+                "[resourceId('Microsoft.Web/sites', parameters('sites_Chapter2DocumentClassifier20240912215556_name'))]"
+            ],
+            "tags": {
+                "hidden-link: /app-insights-resource-id": "/subscriptions/2eb5b1d0-d315-4b57-815c-3df15002ac69/resourceGroups/tut-ch2-docs-classifier-rg/providers/microsoft.insights/components/Chapter2DocumentClassifier",
+                "hidden-link: /app-insights-instrumentation-key": "e18b8120-7d34-4a42-9252-731089f2d6bc",
+                "hidden-link: /app-insights-conn-string": "InstrumentationKey=e18b8120-7d34-4a42-9252-731089f2d6bc;IngestionEndpoint=https://uksouth-1.in.applicationinsights.azure.com/;LiveEndpoint=https://uksouth.livediagnostics.monitor.azure.com/;ApplicationId=cfa9dd5d-d5ed-43cf-a91d-f7ddec98e084"
+            },
+            "properties": {
+                "allow": true
+            }
+        },
+        {
+            "type": "Microsoft.Web/sites/basicPublishingCredentialsPolicies",
+            "apiVersion": "2023-12-01",
+            "name": "[concat(parameters('sites_Chapter2DocumentClassifier20240912215556_name'), '/scm')]",
+            "location": "UK South",
+            "dependsOn": [
+                "[resourceId('Microsoft.Web/sites', parameters('sites_Chapter2DocumentClassifier20240912215556_name'))]"
+            ],
+            "tags": {
+                "hidden-link: /app-insights-resource-id": "/subscriptions/2eb5b1d0-d315-4b57-815c-3df15002ac69/resourceGroups/tut-ch2-docs-classifier-rg/providers/microsoft.insights/components/Chapter2DocumentClassifier",
+                "hidden-link: /app-insights-instrumentation-key": "e18b8120-7d34-4a42-9252-731089f2d6bc",
+                "hidden-link: /app-insights-conn-string": "InstrumentationKey=e18b8120-7d34-4a42-9252-731089f2d6bc;IngestionEndpoint=https://uksouth-1.in.applicationinsights.azure.com/;LiveEndpoint=https://uksouth.livediagnostics.monitor.azure.com/;ApplicationId=cfa9dd5d-d5ed-43cf-a91d-f7ddec98e084"
+            },
+            "properties": {
+                "allow": true
+            }
+        },
+        {
+            "type": "Microsoft.Web/sites/config",
+            "apiVersion": "2023-12-01",
+            "name": "[concat(parameters('sites_Chapter2DocumentClassifier20240912215556_name'), '/web')]",
+            "location": "UK South",
+            "dependsOn": [
+                "[resourceId('Microsoft.Web/sites', parameters('sites_Chapter2DocumentClassifier20240912215556_name'))]"
+            ],
+            "tags": {
+                "hidden-link: /app-insights-resource-id": "/subscriptions/2eb5b1d0-d315-4b57-815c-3df15002ac69/resourceGroups/tut-ch2-docs-classifier-rg/providers/microsoft.insights/components/Chapter2DocumentClassifier",
+                "hidden-link: /app-insights-instrumentation-key": "e18b8120-7d34-4a42-9252-731089f2d6bc",
+                "hidden-link: /app-insights-conn-string": "InstrumentationKey=e18b8120-7d34-4a42-9252-731089f2d6bc;IngestionEndpoint=https://uksouth-1.in.applicationinsights.azure.com/;LiveEndpoint=https://uksouth.livediagnostics.monitor.azure.com/;ApplicationId=cfa9dd5d-d5ed-43cf-a91d-f7ddec98e084"
+            },
+            "properties": {
+                "numberOfWorkers": 1,
+                "defaultDocuments": [
+                    "Default.htm",
+                    "Default.html",
+                    "Default.asp",
+                    "index.htm",
+                    "index.html",
+                    "iisstart.htm",
+                    "default.aspx",
+                    "index.php"
+                ],
+                "netFrameworkVersion": "v8.0",
+                "requestTracingEnabled": false,
+                "remoteDebuggingEnabled": false,
+                "httpLoggingEnabled": false,
+                "acrUseManagedIdentityCreds": false,
+                "logsDirectorySizeLimit": 35,
+                "detailedErrorLoggingEnabled": false,
+                "publishingUsername": "$Chapter2DocumentClassifier20240912215556",
+                "scmType": "None",
+                "use32BitWorkerProcess": false,
+                "webSocketsEnabled": false,
+                "alwaysOn": false,
+                "managedPipelineMode": "Integrated",
+                "virtualApplications": [
+                    {
+                        "virtualPath": "/",
+                        "physicalPath": "site\\wwwroot",
+                        "preloadEnabled": false
+                    }
+                ],
+                "loadBalancing": "LeastRequests",
+                "experiments": {
+                    "rampUpRules": []
+                },
+                "autoHealEnabled": false,
+                "vnetRouteAllEnabled": false,
+                "vnetPrivatePortsCount": 0,
+                "localMySqlEnabled": false,
+                "managedServiceIdentityId": 39410,
+                "ipSecurityRestrictions": [
+                    {
+                        "ipAddress": "Any",
+                        "action": "Allow",
+                        "priority": 2147483647,
+                        "name": "Allow all",
+                        "description": "Allow all access"
+                    }
+                ],
+                "scmIpSecurityRestrictions": [
+                    {
+                        "ipAddress": "Any",
+                        "action": "Allow",
+                        "priority": 2147483647,
+                        "name": "Allow all",
+                        "description": "Allow all access"
+                    }
+                ],
+                "scmIpSecurityRestrictionsUseMain": false,
+                "http20Enabled": false,
+                "minTlsVersion": "1.2",
+                "scmMinTlsVersion": "1.2",
+                "ftpsState": "FtpsOnly",
+                "preWarmedInstanceCount": 0,
+                "functionAppScaleLimit": 200,
+                "functionsRuntimeScaleMonitoringEnabled": false,
+                "minimumElasticInstanceCount": 0,
+                "azureStorageAccounts": {}
+            }
+        },
+        {
+            "type": "Microsoft.Web/sites/deployments",
+            "apiVersion": "2023-12-01",
+            "name": "[concat(parameters('sites_Chapter2DocumentClassifier20240912215556_name'), '/513ea17023944452813600ea98f52bc4')]",
+            "location": "UK South",
+            "dependsOn": [
+                "[resourceId('Microsoft.Web/sites', parameters('sites_Chapter2DocumentClassifier20240912215556_name'))]"
+            ],
+            "properties": {
+                "status": 4,
+                "author_email": "N/A",
+                "author": "N/A",
+                "deployer": "ZipDeploy",
+                "message": "Created via a push deployment",
+                "start_time": "2024-09-12T21:01:49.2175491Z",
+                "end_time": "2024-09-12T21:01:50.8737953Z",
+                "active": false
+            }
+        },
+        {
+            "type": "Microsoft.Web/sites/deployments",
+            "apiVersion": "2023-12-01",
+            "name": "[concat(parameters('sites_Chapter2DocumentClassifier20240912215556_name'), '/6521b43a795a4cbab9d72d450ed9a5de')]",
+            "location": "UK South",
+            "dependsOn": [
+                "[resourceId('Microsoft.Web/sites', parameters('sites_Chapter2DocumentClassifier20240912215556_name'))]"
+            ],
+            "properties": {
+                "status": 4,
+                "author_email": "N/A",
+                "author": "N/A",
+                "deployer": "ZipDeploy",
+                "message": "Created via a push deployment",
+                "start_time": "2024-09-13T13:40:29.2302081Z",
+                "end_time": "2024-09-13T13:40:30.37084Z",
+                "active": true
+            }
+        },
+        {
+            "type": "Microsoft.Web/sites/deployments",
+            "apiVersion": "2023-12-01",
+            "name": "[concat(parameters('sites_Chapter2DocumentClassifier20240912215556_name'), '/8a747cafb1b248e2a01682fdc14f8863')]",
+            "location": "UK South",
+            "dependsOn": [
+                "[resourceId('Microsoft.Web/sites', parameters('sites_Chapter2DocumentClassifier20240912215556_name'))]"
+            ],
+            "properties": {
+                "status": 4,
+                "author_email": "N/A",
+                "author": "N/A",
+                "deployer": "ZipDeploy",
+                "message": "Created via a push deployment",
+                "start_time": "2024-09-12T22:29:27.8187729Z",
+                "end_time": "2024-09-12T22:29:29.4281646Z",
+                "active": false
+            }
+        },
+        {
+            "type": "Microsoft.Web/sites/deployments",
+            "apiVersion": "2023-12-01",
+            "name": "[concat(parameters('sites_Chapter2DocumentClassifier20240912215556_name'), '/aecba92a2de240f3972cf24402102572')]",
+            "location": "UK South",
+            "dependsOn": [
+                "[resourceId('Microsoft.Web/sites', parameters('sites_Chapter2DocumentClassifier20240912215556_name'))]"
+            ],
+            "properties": {
+                "status": 4,
+                "author_email": "N/A",
+                "author": "N/A",
+                "deployer": "ZipDeploy",
+                "message": "Created via a push deployment",
+                "start_time": "2024-09-12T21:09:10.8034992Z",
+                "end_time": "2024-09-12T21:09:12.3503925Z",
+                "active": false
+            }
+        },
+        {
+            "type": "Microsoft.Web/sites/functions",
+            "apiVersion": "2023-12-01",
+            "name": "[concat(parameters('sites_Chapter2DocumentClassifier20240912215556_name'), '/DocumentClassifier')]",
+            "location": "UK South",
+            "dependsOn": [
+                "[resourceId('Microsoft.Web/sites', parameters('sites_Chapter2DocumentClassifier20240912215556_name'))]"
+            ],
+            "properties": {
+                "script_href": "https://chapter2documentclassifier20240912215556.azurewebsites.net/admin/vfs/site/wwwroot/Chapter2DocumentClassifier.dll",
+                "test_data_href": "https://chapter2documentclassifier20240912215556.azurewebsites.net/admin/vfs/data/Functions/sampledata/DocumentClassifier.dat",
+                "href": "https://chapter2documentclassifier20240912215556.azurewebsites.net/admin/functions/DocumentClassifier",
+                "config": {
+                    "name": "DocumentClassifier",
+                    "entryPoint": "Chapter2DocumentClassifier.DocumentClassifier.Run",
+                    "scriptFile": "Chapter2DocumentClassifier.dll",
+                    "language": "dotnet-isolated",
+                    "functionDirectory": "",
+                    "bindings": [
+                        {
+                            "name": "stream",
+                            "type": "blobTrigger",
+                            "direction": "In",
+                            "properties": {
+                                "supportsDeferredBinding": "True"
+                            },
+                            "path": "%sourceContainerName%/{name}",
+                            "source": "LogsAndContainerScan",
+                            "connection": "blobConn"
+                        }
+                    ]
+                },
+                "language": "dotnet-isolated",
+                "isDisabled": false
+            }
+        },
+        {
+            "type": "Microsoft.Web/sites/hostNameBindings",
+            "apiVersion": "2023-12-01",
+            "name": "[concat(parameters('sites_Chapter2DocumentClassifier20240912215556_name'), '/', parameters('sites_Chapter2DocumentClassifier20240912215556_name'), '.azurewebsites.net')]",
+            "location": "UK South",
+            "dependsOn": [
+                "[resourceId('Microsoft.Web/sites', parameters('sites_Chapter2DocumentClassifier20240912215556_name'))]"
+            ],
+            "properties": {
+                "siteName": "Chapter2DocumentClassifier20240912215556",
+                "hostNameType": "Verified"
+            }
+        },
+        {
+            "type": "Microsoft.Storage/storageAccounts/blobServices/containers",
+            "apiVersion": "2023-05-01",
+            "name": "[concat(parameters('storageAccounts_tutch2docsclassifierst_name'), '/default/azure-webjobs-hosts')]",
+            "dependsOn": [
+                "[resourceId('Microsoft.Storage/storageAccounts/blobServices', parameters('storageAccounts_tutch2docsclassifierst_name'), 'default')]",
+                "[resourceId('Microsoft.Storage/storageAccounts', parameters('storageAccounts_tutch2docsclassifierst_name'))]"
+            ],
+            "properties": {
+                "immutableStorageWithVersioning": {
+                    "enabled": false
+                },
+                "defaultEncryptionScope": "$account-encryption-key",
+                "denyEncryptionScopeOverride": false,
+                "publicAccess": "None"
+            }
+        },
+        {
+            "type": "Microsoft.Storage/storageAccounts/blobServices/containers",
+            "apiVersion": "2023-05-01",
+            "name": "[concat(parameters('storageAccounts_tutch2docsclassifierst_name'), '/default/azure-webjobs-secrets')]",
+            "dependsOn": [
+                "[resourceId('Microsoft.Storage/storageAccounts/blobServices', parameters('storageAccounts_tutch2docsclassifierst_name'), 'default')]",
+                "[resourceId('Microsoft.Storage/storageAccounts', parameters('storageAccounts_tutch2docsclassifierst_name'))]"
+            ],
+            "properties": {
+                "immutableStorageWithVersioning": {
+                    "enabled": false
+                },
+                "defaultEncryptionScope": "$account-encryption-key",
+                "denyEncryptionScopeOverride": false,
+                "publicAccess": "None"
+            }
+        },
+        {
+            "type": "Microsoft.Storage/storageAccounts/blobServices/containers",
+            "apiVersion": "2023-05-01",
+            "name": "[concat(parameters('storageAccounts_tutch2docsclassifierst_name'), '/default/destination')]",
+            "dependsOn": [
+                "[resourceId('Microsoft.Storage/storageAccounts/blobServices', parameters('storageAccounts_tutch2docsclassifierst_name'), 'default')]",
+                "[resourceId('Microsoft.Storage/storageAccounts', parameters('storageAccounts_tutch2docsclassifierst_name'))]"
+            ],
+            "properties": {
+                "immutableStorageWithVersioning": {
+                    "enabled": false
+                },
+                "defaultEncryptionScope": "$account-encryption-key",
+                "denyEncryptionScopeOverride": false,
+                "publicAccess": "None"
+            }
+        },
+        {
+            "type": "Microsoft.Storage/storageAccounts/blobServices/containers",
+            "apiVersion": "2023-05-01",
+            "name": "[concat(parameters('storageAccounts_tutch2docsclassifierst_name'), '/default/source')]",
+            "dependsOn": [
+                "[resourceId('Microsoft.Storage/storageAccounts/blobServices', parameters('storageAccounts_tutch2docsclassifierst_name'), 'default')]",
+                "[resourceId('Microsoft.Storage/storageAccounts', parameters('storageAccounts_tutch2docsclassifierst_name'))]"
+            ],
+            "properties": {
+                "immutableStorageWithVersioning": {
+                    "enabled": false
+                },
+                "defaultEncryptionScope": "$account-encryption-key",
+                "denyEncryptionScopeOverride": false,
+                "publicAccess": "None"
+            }
+        },
+        {
+            "type": "Microsoft.Storage/storageAccounts/fileServices/shares",
+            "apiVersion": "2023-05-01",
+            "name": "[concat(parameters('storageAccounts_tutch2docsclassifierst_name'), '/default/chapter2documentclassifier20240912215556')]",
+            "dependsOn": [
+                "[resourceId('Microsoft.Storage/storageAccounts/fileServices', parameters('storageAccounts_tutch2docsclassifierst_name'), 'default')]",
+                "[resourceId('Microsoft.Storage/storageAccounts', parameters('storageAccounts_tutch2docsclassifierst_name'))]"
+            ],
+            "properties": {
+                "accessTier": "TransactionOptimized",
+                "shareQuota": 102400,
+                "enabledProtocols": "SMB"
+            }
+        },
+        {
+            "type": "Microsoft.Storage/storageAccounts/queueServices/queues",
+            "apiVersion": "2023-05-01",
+            "name": "[concat(parameters('storageAccounts_tutch2docsclassifierst_name'), '/default/azure-webjobs-blobtrigger-chapter2documentclassifier202409')]",
+            "dependsOn": [
+                "[resourceId('Microsoft.Storage/storageAccounts/queueServices', parameters('storageAccounts_tutch2docsclassifierst_name'), 'default')]",
+                "[resourceId('Microsoft.Storage/storageAccounts', parameters('storageAccounts_tutch2docsclassifierst_name'))]"
+            ],
+            "properties": {
+                "metadata": {}
+            }
+        }
+    ]
+}
