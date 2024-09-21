@@ -24,10 +24,10 @@ This project demonstrates the deployment of an Azure Function App using .NET, wi
 
 ### Built With
 
-[![.NET][.NET]][.NET-url]
-[![Azure][Azure]][Azure-url]
-[![Bicep][Bicep]][Bicep-url]
-[![Terraform][Terraform]][Terraform-url]
+* [.NET](https://dotnet.microsoft.com/en-us/)
+* [Azure](https://azure.microsoft.com/en-gb)
+* [Bicep](https://learn.microsoft.com/en-us/azure/azure-resource-manager/bicep/)
+* [Terraform](https://www.terraform.io/)
 
 #### Definitions
 
@@ -127,7 +127,7 @@ There a several ways to deploy the Bicep IaC:
     > Mix up the numbers, for example, 1 and 6 could be the two in a second language
 
 2. Upload the files to the `source` container
-3. The Function will be triggered as it detects a change in the blob storage and the files will be sorted into folders named with the language of the files.
+3. The Function will be triggered as it detects a change in the blob storage and the files will be copied and sorted into the `destination` container into folders named with the language of the files.
 
 
 
@@ -136,6 +136,8 @@ There a several ways to deploy the Bicep IaC:
 
 - [x] Add BICEP IaC
 - [ ] Add Terraform IaC
+- [ ] Look into using [Pulumi](https://www.pulumi.com) IaC
+- [ ] Look into using [SST](https://sst.dev) IaC
 
 
 
@@ -167,11 +169,3 @@ Project Link: [github.com/alandavidhenry/tut-ch2-docs-classifier](https://github
 <!-- MARKDOWN LINKS & IMAGES -->
 <!-- https://www.markdownguide.org/basic-syntax/#reference-style-links -->
 [product-screenshot]: images/screenshot.png
-[.NET]: https://img.shields.io/badge/dotnet-000000?style=for-the-badge&logo=dotnet&logoColor=512BD4
-[.NET-url]: https://dotnet.microsoft.com/en-us/
-[Azure]: https://img.shields.io/badge/azure-000000?style=for-the-badge&logo=azure&logoColor=06B6D4
-[Azure-url]: https://azure.microsoft.com/en-gb
-[Bicep]: https://img.shields.io/badge/bicep-000000?style=for-the-badge&logo=bicep&logoColor=FF0082
-[Bicep-url]: https://learn.microsoft.com/en-us/azure/azure-resource-manager/bicep/
-[Terraform]: https://img.shields.io/badge/terraform-000000?style=for-the-badge&logo=terraform&logoColor=844FBA
-[Terraform-url]: https://www.terraform.io/
